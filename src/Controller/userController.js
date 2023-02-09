@@ -1,5 +1,5 @@
 
-const {hash}=require ('bcrypt')
+const {hash, compare}=require ('bcrypt')
 const AppError = require("../Utils/AppError")
 const knex = require("../Database/knex")
 class UserController{
@@ -20,7 +20,7 @@ class UserController{
         
     }
     async update(request,response){
-        const {name,email,password}= request.body
+        const {name,email,oldpassword,password}= request.body
         const {id}= request.params
         
         
@@ -30,11 +30,22 @@ class UserController{
             throw new AppError('Usuário não encontrado')
         }
         const UserWhithSameEmail= await knex("users").where({email})
-        if( UserWhithSameEmail && UserWhithSameEmail.id !== User.id ){
+        if(  UserWhithSameEmail.id !== User.id ){
             throw new AppError('Este e-mail já está cadastrado')
         }
         
+          if(password && !oldpassword){
+            throw new AppError('Informe a senha antiga')
+          }
+          if(password && oldpassword){
+            const CheckOldPassword= await compare(oldpassword,User.password)
+            if(!CheckOldPassword){
+                throw new AppError('Email e/ou senha incorretos',401)
+            }
+          }
         
+
+       
         User.name= name ?? User.name
         User.email=email ?? User.email
         const hashedPassword=await hash(password,8)
