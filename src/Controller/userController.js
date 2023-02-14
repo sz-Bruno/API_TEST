@@ -25,7 +25,7 @@ class UserController{
         const {name,email,oldpassword,password}= request.body
         const user_id= request.user.id
         
-        const User= await knex("users").where({user_id})
+        const User= await knex("users").where('id', user_id)
         const UserWhithSameEmail= await knex("users").where({email})
 
         if(User.length===0){
@@ -50,7 +50,7 @@ class UserController{
             const hashedPassword=await hash(password,8)
             User[0].password=hashedPassword ?? User[0].password
             
-            await knex('users').update({name:User[0].name, email:User[0].email, password:User[0].password}).where({user_id})
+            await knex('users').update({name:User[0].name, email:User[0].email, password:User[0].password}).where('id',user_id)
             response.status(200).json({message:`Dados do(a) usuário(a) ${name} atualizados`})
            }
         }
