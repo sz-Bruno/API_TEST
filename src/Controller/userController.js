@@ -1,7 +1,8 @@
 
-const {hash, compare}=require ('bcrypt')
+const {hash, compare}=require ('bcryptjs')
 const AppError = require("../Utils/AppError")
 const knex = require("../Database/knex")
+
 class UserController{
 
     async create (request,response){
@@ -22,16 +23,16 @@ class UserController{
     }
     async update(request,response){
         const {name,email,oldpassword,password}= request.body
-        const {id}= request.params
+        const user_id= request.user.id
         
-        const User= await knex("users").where({id})
+        const User= await knex("users").where({user_id})
         const UserWhithSameEmail= await knex("users").where({email})
 
         if(User.length===0){
             throw new AppError('Usuário não encontrado')
         }
         
-        if( UserWhithSameEmail[0] && UserWhithSameEmail[0].id !== User[0].id ){
+        if( UserWhithSameEmail[0] && UserWhithSameEmail[0].id !== User[0].id){
             throw new AppError('Este e-mail já está cadastrado')
         }
         
@@ -49,7 +50,7 @@ class UserController{
             const hashedPassword=await hash(password,8)
             User[0].password=hashedPassword ?? User[0].password
             
-            await knex('users').update({name:User[0].name, email:User[0].email, password:User[0].password}).where({id})
+            await knex('users').update({name:User[0].name, email:User[0].email, password:User[0].password}).where({user_id})
             response.status(200).json({message:`Dados do(a) usuário(a) ${name} atualizados`})
            }
         }

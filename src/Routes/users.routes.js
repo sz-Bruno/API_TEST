@@ -1,23 +1,15 @@
-const express= require('express')
+const {Router}= require('express')
 
-const userRouter= express()
+
 const UserController= require('../Controller/userController')
-const AppError = require('../Utils/AppError')
+const AuthMiddleware= require('.././Middlewares/EnsureAuthenticated')
+const userRouter= Router()
 const userController= new UserController
 
-const MiddleWare=(request,response,next)=>{
-    const {isAdmin}= request.body
-    
-    if(!isAdmin){
-       throw new AppError('Você não tem a permissão de Administrador')
-       
-    }
-    next()
 
-  
-}
 
-userRouter.post('/',MiddleWare, userController.create )
-userRouter.put('/:id',MiddleWare, userController.update )
+
+userRouter.post('/', userController.create )
+userRouter.put('/',AuthMiddleware, userController.update )
 
 module.exports= userRouter
